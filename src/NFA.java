@@ -1,28 +1,21 @@
 import java.util.*;
 
 /**
- * Regular expression pattern matching
+ * Regular expression pattern matcher.
  * <p>
- * This is the classic implementation based on an NFA and supports the following operators:
- * <p>
- * - parentheses -> ()
- * <p>
- * - multiway or -> |
- * <p>
- * - closure -> *
- * <p>
- * - wildcard -> .
- * <p>
- * - one or more -> +
- * <p>
- * - zero or one -> ?
- *
+ * This is a bare-bones implementation based on an NFA and supports the following operators:
+ * - parentheses (),
+ * - multiway or |,
+ * - closure *,
+ * - wildcard .,
+ * - one or more +,
+ * - zero or one ?
  * <p>
  * Performance:
- * <p>
- * Typical performance is O(N+M) in the sizes of the text and the regular expression
- * <p>
- * Worst case performance is O(NM) in the sizes of the text and the regular expression
+ * Typical O(N+M) in the sizes of the text and the regular expression
+ * Worst case O(N*M) in the sizes of the text and the regular expression
+ *
+ * @author Spyros Dellas
  */
 public class NFA {
 
@@ -73,22 +66,23 @@ public class NFA {
     }
 
     /**
-     * Construct the NFA for the given regular expression
+     * Constructs the NFA for the given regular expression.
      *
-     * @param re The regular expression to be parsed
+     * @param re the regular expression
      */
     public NFA(String re) {
         regex = ("(" + re + ")").toCharArray();
         int size = regex.length;
-        isOperator = new boolean[size];
         acceptState = size;
         nfa = new Digraph(size + 1);  // the length of the regular expression plus one to account for the accept state
+        isOperator = new boolean[size];
+        Set<Character> operators = Set.of('(', ')', '|', '*', '+', '?', '.');
         Stack<Integer> parenthesis = new Stack<>();
         Stack<Integer> or = new Stack<>();
 
         for (int index = 0; index < size; index++) {
             char c = regex[index];
-            if (operator(c))
+            if (operators.contains(c))
                 isOperator[index] = true;
             if (c == '(') {
                 nfa.addEdge(index, index + 1);
@@ -128,11 +122,12 @@ public class NFA {
         }
     }
 
-    private boolean operator(char c) {
-        return (c == '(' || c == ')' || c == '|' || c == '*' ||
-                c == '+' || c == '?' || c == '.' || c == '\\');
-    }
-
+    /**
+     * Checks if the given input is in the language specified by the regular expression.
+     *
+     * @param text the input
+     * @return true if {@code text} is in the language specified by the regular expression
+     */
     public boolean recognizes(String text) {
         Set<Integer> reachableStates = nfa.dfs(0);
         // System.out.println(reachableStates);
@@ -172,11 +167,10 @@ public class NFA {
         NFA pattern = new NFA(regex);
         System.out.println(Arrays.toString(pattern.regex));
         // System.out.println(pattern);
-        String[] texts = new String[]{"@@ABCFCFDDEFDEFCFG", "ABG", "SpyrosABCFDFEFG", "Sypros Dallas", "Spyros Dellas",
+        String[] texts = new String[]{"@@ABCFCFDDEFDEFCFG", "ABG", "SpyrosABCFDFEFG", "SXXros Dallas", "Spyros Dellas",
                 "Spyros Dillas"};
         for (String text : texts) {
             System.out.println("Text = " + text + ", recognizes = " + pattern.recognizes(text));
         }
     }
-
 }
